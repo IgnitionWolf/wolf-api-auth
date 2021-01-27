@@ -6,6 +6,7 @@ use IgnitionWolf\API\Auth\Generators\Generator;
 use IgnitionWolf\API\Auth\Support\ModulesBridge;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Console\Input\InputOption;
 
 class InstallCommand extends Command
 {
@@ -14,7 +15,7 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'api:auth';
+    protected $signature = 'api:auth {--force}';
 
     /**
      * The console command description.
@@ -34,6 +35,13 @@ class InstallCommand extends Command
         $this->modules = $modules;
     }
 
+    protected function getOptions(): array
+    {
+        return [
+            ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when the auth is already installed.'],
+        ];
+    }
+
     /**
      * Execute the console command.
      *
@@ -41,7 +49,7 @@ class InstallCommand extends Command
      */
     public function handle()
     {
-        if ($this->isInstalled()) {
+        if ($this->isInstalled() && !$this->option('force')) {
             $this->error('The files may already have been installed, please run this with --force.');
             return E_ERROR;
         }
@@ -58,7 +66,7 @@ class InstallCommand extends Command
             }
         }
 
-        $generator = app(Generator::class);
+        $generator = app(Generator::class)->setConsole($this);
 
         if ($namespace) {
             $generator->setBaseDirectory(base_path(str_replace('\\', '/', $namespace)));
@@ -67,7 +75,9 @@ class InstallCommand extends Command
             $generator->setBaseDirectory(base_path('app'));
         }
 
-        return $generator->generate();
+        $code = $generator->generate();
+        $this->info("The authentication structure has been initiated successfully.");
+        return $code;
     }
 
     /**

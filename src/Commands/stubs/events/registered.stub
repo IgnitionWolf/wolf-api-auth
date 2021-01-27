@@ -2,31 +2,28 @@
 
 namespace $NAMESPACE$;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use $USERNAMESPACE$;
 
 class $CLASSNAME$
 {
     use Dispatchable, SerializesModels;
 
-    /**
-     * @var Model
-     */
-    public Model $user;
+    protected $USERCLASS$ $user;
 
     /**
      * Data provided by the 3rd party registration provider.
      * @var object
      */
-    public $providerData;
+    protected $providerData;
 
     /**
      * Create a new event instance.
-     * @param Model $model
+     * @param $USERCLASS$ $model
      * @param $providerData
      */
-    public function __construct(Model $model, $providerData = null)
+    public function __construct($USERCLASS$ $model, $providerData = null)
     {
         $this->user = $model;
         $this->providerData = $providerData;

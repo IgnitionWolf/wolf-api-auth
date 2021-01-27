@@ -10,19 +10,35 @@ use Illuminate\Filesystem\Filesystem;
 class Generator
 {
     protected Filesystem $filesystem;
-    protected Console $console;
+    protected ?Console $console = null;
     protected Config $config;
+
+    /**
+     * The base directory of the application.
+     * @var string
+     */
     protected string $baseDirectory;
+
+    /**
+     * The base namespace of the application.
+     * @var string
+     */
     protected string $baseNamespace;
 
-    public function __construct(Filesystem $filesystem, Console $console, Config $config)
+    /**
+     * The configured user model of the application
+     * @var string|null
+     */
+    protected ?string $userModel = null;
+
+    public function __construct(Filesystem $filesystem, Config $config)
     {
         $this->filesystem = $filesystem;
-        $this->console = $console;
         $this->config = $config;
 
         $this->baseNamespace = config('api-auth.namespace');
         $this->baseDirectory = base_path();
+        $this->userModel = config('auth.providers.users.model', 'App\User');
     }
 
     /**
@@ -41,15 +57,17 @@ class Generator
             $this->filesystem->put(
                 $path,
                 (new Stub('/' . $file . '.stub', [
+                    'BASENAMESPACE' => $this->getBaseNamespace(),
                     'NAMESPACE' => $namespace,
                     'CLASSNAME' => $classname,
+                    'USERCLASS' => substr($this->userModel, strrpos($this->userModel, '\\') + 1),
+                    'USERNAMESPACE' => $this->userModel,
                 ]))->getContents()
             );
 
-            //$this->console->info("Created: $path");
+            $this->info("Created: $path");
         }
 
-        //$this->console->info("The authentication structure has been initiated successfully.");
         return 0;
     }
 
@@ -147,5 +165,12 @@ class Generator
         $this->baseNamespace = $baseNamespace;
 
         return $this;
+    }
+
+    private function info(string $message): void
+    {
+        if ($this->console) {
+            $this->console->info($message);
+        }
     }
 }

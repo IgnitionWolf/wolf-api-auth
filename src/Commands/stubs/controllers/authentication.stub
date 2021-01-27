@@ -1,0 +1,159 @@
+<?php
+
+namespace $NAMESPACE$;
+
+use Flugg\Responder\Facades\Transformation;
+use IgnitionWolf\API\Exceptions\WrongLoginMethodException;
+use IgnitionWolf\API\Exceptions\FailedLoginException;
+use IgnitionWolf\API\Concerns\FillsDataFromRequest;
+use IgnitionWolf\API\Http\Controllers\BaseController;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\JsonResponse;
+use Exception;
+
+use $BASENAMESPACE$\Http\Requests\Authentication\LoginRequest;
+use $BASENAMESPACE$\Http\Requests\Authentication\RegisterRequest;
+use $BASENAMESPACE$\Http\Requests\Authentication\SocialRequest;
+use $BASENAMESPACE$\Events\UserAuthenticated;
+use $BASENAMESPACE$\Events\UserLoggedIn;
+use $BASENAMESPACE$\Events\UserRegistered;
+use $USERNAMESPACE$;
+
+class $CLASSNAME$ extends BaseController
+{
+    use FillsDataFromRequest;
+
+    /**
+     * Points to the user model to be handled in the controller.
+     *
+     * @var User
+     */
+    protected $USERCLASS$ $model;
+
+    public function __construct($USERCLASS$ $model)
+    {
+        $this->model = $model;
+    }
+
+    /**
+     * Register the user.
+     *
+     * @param RegisterRequest $request
+     * @return JsonResponse
+     * @throws BindingResolutionException
+     */
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        $user = new $USERCLASS$;
+        $user->password = Hash::make($request->get('password'));
+
+        $this->fillFromRequest($request, $user);
+        $user->save();
+
+        UserAuthenticated::dispatch($user);
+        UserRegistered::dispatch($user);
+
+        $token = auth()->tokenById($user->id);
+
+        if (method_exists($user, 'transformer') && $user->transformer()) {
+            $user = Transformation::make($user)->transform();
+        }
+
+        return $this->success(['token' => $token, 'user' => $user]);
+    }
+
+    /**
+     * Login the user by comparing passwords and providing a JWT token.
+     *
+     * @param LoginRequest $request
+     * @return JsonResponse
+     * @throws FailedLoginException
+     * @throws WrongLoginMethodException
+     */
+    public function login(LoginRequest $request): JsonResponse
+    {
+        $credentials = $request->only('email', 'password');
+
+        $user = $this->model->where(['email' => $credentials['email']])->first();
+        if ($user && !$user->password && $user->registration_source !== 'email') {
+            throw new WrongLoginMethodException;
+        } else if (!$user || !$token = auth()->attempt($credentials)) {
+            throw new FailedLoginException;
+        }
+
+        UserLoggedIn::dispatch($user);
+
+        if (method_exists($user, 'transformer') && $user->transformer()) {
+            $user = Transformation::make($user)->transform();
+        }
+
+        return $this->success(['token' => $token, 'user' => $user]);
+    }
+
+    /**
+     * Login or register the user via a third party.
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function social(SocialRequest $request): JsonResponse
+    {
+        $provider = $request->get('provider');
+        $token = $request->get('token');
+
+        $data = Socialite::driver($provider)->userFromToken($token);
+
+        if (!$user = $this->model::where(['email' => $data->email])->first()) {
+            $user = new $USERCLASS$;
+            $user->email = $data->email;
+            $user->name = $data->name;
+            $user->registration_source = $provider;
+            $user->save();
+
+            UserRegistered::dispatch($user, $data);
+        } else {
+            UserLoggedIn::dispatch($user);
+        }
+
+        UserAuthenticated::dispatch($user);
+
+        $token = auth()->tokenById($user->id);
+
+        if (method_exists($user, 'transformer') && $user->transformer()) {
+            $user = Transformation::make($user)->transform();
+        }
+
+        return $this->success(['token' => $token, 'user' => $user]);
+    }
+
+    /**
+     * Check if an user is logged in.
+     *
+     * @return JsonResponse
+     */
+    public function check(): JsonResponse
+    {
+        $user = auth()->user();
+        if (method_exists($user, 'transformer') && $user->transformer()) {
+            $user = Transformation::make($user)->transform();
+        }
+
+        return $this->success([
+            'authenticated' => !empty($user),
+            'user' => $user
+        ]);
+    }
+
+    /**
+     * Log out the user by invalidating the JWT token.
+     *
+     * @return JsonResponse
+     */
+    public function logout(): JsonResponse
+    {
+        auth()->logout();
+        return $this->success();
+    }
+}

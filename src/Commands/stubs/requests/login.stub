@@ -1,0 +1,25 @@
+<?php
+
+namespace $NAMESPACE$;
+
+use IgnitionWolf\API\Http\Requests\EntityRequest;
+
+class $CLASSNAME$ extends EntityRequest
+{
+    protected static string $model = \$USERCLASS$::class;
+
+    public static array $rules = [
+        'email' => 'email:filter|required',
+        'password' => 'required'
+    ];
+
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+}

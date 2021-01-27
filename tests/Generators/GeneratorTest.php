@@ -1,8 +1,9 @@
 <?php
 
-namespace IgnitionWolf\API\Auth\Tests;
+namespace IgnitionWolf\API\Auth\Tests\Generators;
 
 use IgnitionWolf\API\Auth\Generators\Generator;
+use IgnitionWolf\API\Auth\Tests\TestCase;
 
 class GeneratorTest extends TestCase
 {

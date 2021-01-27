@@ -50,4 +50,10 @@ class InstallCommandTest extends TestCase
         $this->artisan('api:auth')->assertExitCode(0);
         $this->artisan('api:auth')->assertExitCode(E_ERROR);
     }
+
+    public function testShouldAllowSecondInstallationWithForce()
+    {
+        $this->artisan('api:auth')->assertExitCode(0);
+        $this->artisan('api:auth', ['--force' => true])->assertExitCode(0);
+    }
 }

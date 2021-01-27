@@ -2,25 +2,32 @@
 
 namespace $NAMESPACE$;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use $USERNAMESPACE$;
 
 class $CLASSNAME$
 {
     use Dispatchable, SerializesModels;
 
-    /**
-     * @var Model
-     */
-    public Model $user;
+    protected $USERCLASS$ $user;
 
     /**
      * Create a new event instance.
-     * @param Model $model
+     * @param $USERCLASS$ $model
      */
-    public function __construct(Model $model)
+    public function __construct($USERCLASS$ $model)
     {
         $this->user = $model;
+    }
+
+    /**
+     * Get the channels the event should be broadcast on.
+     *
+     * @return array
+     */
+    public function broadcastOn()
+    {
+        return [];
     }
 }

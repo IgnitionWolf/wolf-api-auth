@@ -9,7 +9,10 @@ This scaffolds the authentication boilerplate for projects powered by WolfAPI.
 
 ## vs Laravel Fortify
 
-This package was made to integrate nicely with WolfAPI and ease the API development. However, you may use Fortify or any other solution you wish to use.
+Contrary to Fortify, this package bootstraps the authentication code in your project, this means you will be able to 
+implement business logic and modify the authentication process as you wish. This may require a lower level understanding 
+of how authentication works, considering Fortify hides most of the process. Moreover, this is meant to integrate nicely 
+with WolfAPI and ease the API development. However, you may use Fortify or any other solution you prefer to use.
 
 ## Installation
 
