@@ -6,6 +6,7 @@ use IgnitionWolf\API\Auth\Support\Stub;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Console\Command as Console;
 use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
 
 class Generator
 {
@@ -69,6 +70,15 @@ class Generator
         }
 
         return 0;
+    }
+
+    private function addSanctumPackage(): void
+    {
+        (new Process(['composer', 'require', 'laravel/sanctum'], base_path(), ['COMPOSER_MEMORY_LIMIT' => '-1']))
+            ->setTimeout(null)
+            ->run(function ($type, $output) {
+                $this->console->getOutput()->write($output);
+            });
     }
 
     /**

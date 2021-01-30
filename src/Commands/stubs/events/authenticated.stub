@@ -10,7 +10,7 @@ class $CLASSNAME$
 {
     use Dispatchable, SerializesModels;
 
-    protected $USERCLASS$ $user;
+    public $USERCLASS$ $user;
 
     /**
      * Create a new event instance.

@@ -3,10 +3,11 @@
 namespace $NAMESPACE$;
 
 use IgnitionWolf\API\Http\Requests\EntityRequest;
+use $USERNAMESPACE$;
 
 class $CLASSNAME$ extends EntityRequest
 {
-    protected static string $model = \$USERCLASS$::class;
+    protected static string $model = $USERCLASS$::class;
 
     public static array $rules = [
         'provider' => 'required|in:google,facebook,instagram',

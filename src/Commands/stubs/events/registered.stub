@@ -10,13 +10,13 @@ class $CLASSNAME$
 {
     use Dispatchable, SerializesModels;
 
-    protected $USERCLASS$ $user;
+    public $USERCLASS$ $user;
 
     /**
      * Data provided by the 3rd party registration provider.
      * @var object
      */
-    protected $providerData;
+    public $providerData;
 
     /**
      * Create a new event instance.
